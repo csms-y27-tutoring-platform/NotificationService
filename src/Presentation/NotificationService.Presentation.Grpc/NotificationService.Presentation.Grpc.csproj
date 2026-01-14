@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Include="Protos\notification.proto" GrpcServices="Server" />
+    </ItemGroup>
+    
+  <ItemGroup>
+    <ProjectReference Include="..\..\Application\NotificationService.Application.Contracts\NotificationService.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\Application\NotificationService.Application.Domain\NotificationService.Application.Domain.csproj" />
+    <ProjectReference Include="..\..\Application\NotificationService.Application\NotificationService.Application.csproj" />
+  </ItemGroup>
+</Project>
