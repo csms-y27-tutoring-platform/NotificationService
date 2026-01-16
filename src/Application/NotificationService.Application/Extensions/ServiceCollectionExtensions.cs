@@ -10,7 +10,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<INotificationService, Services.NotificationsService>();
-        services.AddScoped<INotificationEventProcessor, NotificationEventProcessor>();
+        services.AddSingleton<INotificationEventProcessor, NotificationEventProcessor>();
 
         return services;
     }

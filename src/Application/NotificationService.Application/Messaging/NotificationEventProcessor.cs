@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NotificationService.Application.Abstractions.Messaging;
 using NotificationService.Application.Abstractions.Repositories;
 using NotificationService.Application.Domain.Entities;
@@ -7,19 +9,21 @@ namespace NotificationService.Application.Messaging;
 
 public class NotificationEventProcessor : INotificationEventProcessor
 {
-    private readonly INotificationRepository _notificationRepository;
-    private readonly IUnreadNotificationCountRepository _countRepository;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public NotificationEventProcessor(
-        INotificationRepository notificationRepository,
-        IUnreadNotificationCountRepository countRepository)
+        IServiceScopeFactory serviceScopeFactory,
+        ILogger<NotificationEventProcessor> logger)
     {
-        _notificationRepository = notificationRepository;
-        _countRepository = countRepository;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     public async Task ProcessBookingCreatedAsync(long bookingId, string createdBy, CancellationToken cancellationToken)
     {
+        using IServiceScope scope = _serviceScopeFactory.CreateScope();
+        INotificationRepository notificationRepository = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
+        IUnreadNotificationCountRepository countRepository = scope.ServiceProvider.GetRequiredService<IUnreadNotificationCountRepository>();
+
         Guid userId = ParseUserId(createdBy);
         var notification = Notification.Create(
             Guid.NewGuid(),
@@ -28,12 +32,16 @@ public class NotificationEventProcessor : INotificationEventProcessor
             $"Your booking #{bookingId} has been successfully created. The tutor will contact you shortly.",
             NotificationType.BookingCreated);
 
-        await _notificationRepository.AddAsync(notification, cancellationToken).ConfigureAwait(false);
-        await _countRepository.IncrementCountAsync(userId, cancellationToken).ConfigureAwait(false);
+        await notificationRepository.AddAsync(notification, cancellationToken).ConfigureAwait(false);
+        await countRepository.IncrementCountAsync(userId, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task ProcessBookingCancelledAsync(long bookingId, string cancelledBy, string reason, CancellationToken cancellationToken)
     {
+        using IServiceScope scope = _serviceScopeFactory.CreateScope();
+        INotificationRepository notificationRepository = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
+        IUnreadNotificationCountRepository countRepository = scope.ServiceProvider.GetRequiredService<IUnreadNotificationCountRepository>();
+
         Guid userId = ParseUserId(cancelledBy);
         var notification = Notification.Create(
             Guid.NewGuid(),
@@ -42,8 +50,8 @@ public class NotificationEventProcessor : INotificationEventProcessor
             $"Your booking #{bookingId} has been cancelled. Reason: {reason}",
             NotificationType.BookingCancelled);
 
-        await _notificationRepository.AddAsync(notification, cancellationToken).ConfigureAwait(false);
-        await _countRepository.IncrementCountAsync(userId, cancellationToken).ConfigureAwait(false);
+        await notificationRepository.AddAsync(notification, cancellationToken).ConfigureAwait(false);
+        await countRepository.IncrementCountAsync(userId, cancellationToken).ConfigureAwait(false);
     }
 
     private static Guid ParseUserId(string userString)

@@ -19,7 +19,7 @@ internal class Program
 
         builder.Services.Configure<KestrelServerOptions>(options =>
         {
-            options.ListenLocalhost(5000, listenOptions =>
+            options.ListenLocalhost(5004, listenOptions =>
             {
                 listenOptions.Protocols = HttpProtocols.Http2;
             });
