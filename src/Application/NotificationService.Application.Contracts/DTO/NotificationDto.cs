@@ -6,7 +6,7 @@ public record NotificationDto
 {
     public Guid Id { get; init; }
 
-    public Guid UserId { get; init; }
+    public string UserId { get; init; } = string.Empty;
 
     public string Title { get; init; } = string.Empty;
 

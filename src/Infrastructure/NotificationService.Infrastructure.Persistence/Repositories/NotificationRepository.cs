@@ -47,7 +47,7 @@ public class NotificationRepository : INotificationRepository
         }
     }
 
-    public async Task<IReadOnlyCollection<Notification>> FindByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Notification>> FindByUserIdAsync(string userId, CancellationToken cancellationToken)
     {
         const string sql = """
                            SELECT id, user_id, title, content, type, status, created_at, read_at
@@ -82,7 +82,7 @@ public class NotificationRepository : INotificationRepository
         }
     }
 
-    public async Task<IReadOnlyCollection<Notification>> FindUnreadByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Notification>> FindUnreadByUserIdAsync(string userId, CancellationToken cancellationToken)
     {
         const string sql = """
                            SELECT id, user_id, title, content, type, status, created_at, read_at
@@ -99,7 +99,7 @@ public class NotificationRepository : INotificationRepository
                 Parameters =
                 {
                     new NpgsqlParameter("user_id", userId),
-                    new NpgsqlParameter("status", NotificationStatus.Unread),
+                    new NpgsqlParameter { ParameterName = "status", Value = NotificationStatus.Unread, DataTypeName = "notification_status" },
                 },
             };
 
@@ -136,8 +136,8 @@ public class NotificationRepository : INotificationRepository
                     new NpgsqlParameter("user_id", notification.UserId),
                     new NpgsqlParameter("title", notification.Title),
                     new NpgsqlParameter("content", notification.Content),
-                    new NpgsqlParameter("type", notification.Type),
-                    new NpgsqlParameter("status", notification.Status),
+                    new NpgsqlParameter { ParameterName = "type", Value = notification.Type, DataTypeName = "notification_type" },
+                    new NpgsqlParameter { ParameterName = "status", Value = notification.Status, DataTypeName = "notification_status" },
                     new NpgsqlParameter("created_at", notification.CreatedAt),
                     new NpgsqlParameter("read_at", notification.ReadAt ?? (object)DBNull.Value),
                 },
@@ -172,8 +172,8 @@ public class NotificationRepository : INotificationRepository
                     new NpgsqlParameter("user_id", notification.UserId),
                     new NpgsqlParameter("title", notification.Title),
                     new NpgsqlParameter("content", notification.Content),
-                    new NpgsqlParameter("type", notification.Type),
-                    new NpgsqlParameter("status", notification.Status),
+                    new NpgsqlParameter { ParameterName = "type", Value = notification.Type, DataTypeName = "notification_type" },
+                    new NpgsqlParameter { ParameterName = "status", Value = notification.Status, DataTypeName = "notification_status" },
                     new NpgsqlParameter("created_at", notification.CreatedAt),
                     new NpgsqlParameter("read_at", notification.ReadAt ?? (object)DBNull.Value),
                 },
@@ -183,7 +183,7 @@ public class NotificationRepository : INotificationRepository
         }
     }
 
-    public async Task<int> CountUnreadByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<int> CountUnreadByUserIdAsync(string userId, CancellationToken cancellationToken)
     {
         const string sql = """
                            SELECT COUNT(*)
@@ -199,7 +199,7 @@ public class NotificationRepository : INotificationRepository
                 Parameters =
                 {
                     new NpgsqlParameter("user_id", userId),
-                    new NpgsqlParameter("status", NotificationStatus.Unread),
+                    new NpgsqlParameter { ParameterName = "status", Value = NotificationStatus.Unread, DataTypeName = "notification_status" },
                 },
             };
 
@@ -212,7 +212,7 @@ public class NotificationRepository : INotificationRepository
     private static Notification MapNotification(NpgsqlDataReader reader)
     {
         Guid id = reader.GetGuid(reader.GetOrdinal("id"));
-        Guid userId = reader.GetGuid(reader.GetOrdinal("user_id"));
+        string userId = reader.GetString(reader.GetOrdinal("user_id"));
         string title = reader.GetString(reader.GetOrdinal("title"));
         string content = reader.GetString(reader.GetOrdinal("content"));
         NotificationType type = reader.GetFieldValue<NotificationType>(reader.GetOrdinal("type"));

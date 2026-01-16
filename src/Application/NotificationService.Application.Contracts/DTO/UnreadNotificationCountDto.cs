@@ -2,7 +2,7 @@ namespace NotificationService.Application.Contracts.DTO;
 
 public record UnreadNotificationCountDto
 {
-    public Guid UserId { get; init; }
+    public string UserId { get; init; } = string.Empty;
 
     public int Count { get; init; }
 }

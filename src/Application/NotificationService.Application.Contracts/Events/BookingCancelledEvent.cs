@@ -2,7 +2,7 @@ namespace NotificationService.Application.Contracts.Events;
 
 public record BookingCancelledEvent
 {
-    public long BookingId { get; init; }
+    public string BookingId { get; init; } = string.Empty;
 
     public string CancelledBy { get; init; } = string.Empty;
 

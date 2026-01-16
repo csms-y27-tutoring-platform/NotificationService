@@ -1,4 +1,5 @@
-﻿using NotificationService.Application.Extensions;
+﻿using FluentMigrator.Runner;
+using NotificationService.Application.Extensions;
 using NotificationService.Infrastructure.Kafka.Extensions;
 using NotificationService.Infrastructure.Persistence.Extensions;
 using NotificationService.Presentation.Grpc.Extensions;
@@ -23,6 +24,12 @@ internal class Program
             .AddEnvironmentVariables();
 
         WebApplication app = builder.Build();
+
+        using (IServiceScope scope = app.Services.CreateScope())
+        {
+            IMigrationRunner migrationRunner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+            migrationRunner.MigrateUp();
+        }
 
         app.MapGrpcService<NotificationService.Presentation.Grpc.Services.NotificationGrpcService>();
 

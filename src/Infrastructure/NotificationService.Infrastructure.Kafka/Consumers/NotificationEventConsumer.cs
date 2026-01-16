@@ -1,8 +1,9 @@
+using BookingService.Presentation.Kafka;
 using Confluent.Kafka;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NotificationService.Application.Abstractions.Messaging;
-using NotificationService.Presentation.Kafka;
 using NotificationService.Presentation.Kafka.Options;
 
 namespace NotificationService.Infrastructure.Kafka.Consumers;
@@ -10,7 +11,7 @@ namespace NotificationService.Infrastructure.Kafka.Consumers;
 public class NotificationEventConsumer : INotificationEventConsumer
 {
     private readonly IConsumer<byte[], byte[]> _consumer;
-    private readonly INotificationEventProcessor _eventProcessor;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ConnectionOptions _connectionOptions;
     private readonly ConsumerOptions _consumerOptions;
     private readonly IDeserializer<BookingEventKey> _keyDeserializer;
@@ -23,12 +24,12 @@ public class NotificationEventConsumer : INotificationEventConsumer
         IOptions<ConsumerOptions> consumerOptions,
         IDeserializer<BookingEventKey> keyDeserializer,
         IDeserializer<BookingEventValue> valueDeserializer,
-        INotificationEventProcessor eventProcessor,
+        IServiceScopeFactory serviceScopeFactory,
         ILogger<NotificationEventConsumer> logger)
     {
         _connectionOptions = connectionOptions.Value;
         _consumerOptions = consumerOptions.Value;
-        _eventProcessor = eventProcessor;
+        _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
         _keyDeserializer = keyDeserializer;
         _valueDeserializer = valueDeserializer;
@@ -112,6 +113,9 @@ public class NotificationEventConsumer : INotificationEventConsumer
 
     private async Task ProcessMessageAsync(Message<byte[], byte[]> message, CancellationToken cancellationToken)
     {
+        using IServiceScope scope = _serviceScopeFactory.CreateScope();
+        INotificationEventProcessor eventProcessor = scope.ServiceProvider.GetRequiredService<INotificationEventProcessor>();
+
         try
         {
             BookingEventKey key = _keyDeserializer.Deserialize(message.Key, false, SerializationContext.Empty);
@@ -121,7 +125,7 @@ public class NotificationEventConsumer : INotificationEventConsumer
             {
                 case BookingEventValue.EventOneofCase.BookingCreated:
                     BookingCreated bookingCreated = value.BookingCreated;
-                    await _eventProcessor.ProcessBookingCreatedAsync(
+                    await eventProcessor.ProcessBookingCreatedAsync(
                         bookingCreated.BookingId,
                         bookingCreated.CreatedBy,
                         cancellationToken).ConfigureAwait(false);
@@ -130,7 +134,7 @@ public class NotificationEventConsumer : INotificationEventConsumer
 
                 case BookingEventValue.EventOneofCase.BookingCancelled:
                     BookingCancelled bookingCancelled = value.BookingCancelled;
-                    await _eventProcessor.ProcessBookingCancelledAsync(
+                    await eventProcessor.ProcessBookingCancelledAsync(
                         bookingCancelled.BookingId,
                         bookingCancelled.CancelledBy,
                         bookingCancelled.Reason,

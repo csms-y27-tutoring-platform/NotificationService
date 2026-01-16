@@ -19,21 +19,23 @@ public class NotificationsService : INotificationService
         _countRepository = countRepository;
     }
 
-    public async Task<IReadOnlyCollection<NotificationDto>> GetUserNotificationsAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<NotificationDto>> GetUserNotificationsAsync(string userId, CancellationToken cancellationToken)
     {
         IReadOnlyCollection<Notification> notifications = await _notificationRepository.FindByUserIdAsync(userId, cancellationToken).ConfigureAwait(false);
         return notifications.Select(NotificationMapper.MapToDto).ToArray();
     }
 
-    public async Task<NotificationDto?> GetNotificationByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<NotificationDto?> GetNotificationByIdAsync(string id, CancellationToken cancellationToken)
     {
-        Notification? notification = await _notificationRepository.FindByIdAsync(id, cancellationToken).ConfigureAwait(false);
+        var notificationId = Guid.Parse(id);
+        Notification? notification = await _notificationRepository.FindByIdAsync(notificationId, cancellationToken).ConfigureAwait(false);
         return notification is null ? null : NotificationMapper.MapToDto(notification);
     }
 
-    public async Task MarkAsReadAsync(Guid notificationId, CancellationToken cancellationToken)
+    public async Task MarkAsReadAsync(string notificationId, CancellationToken cancellationToken)
     {
-        Notification? notification = await _notificationRepository.FindByIdAsync(notificationId, cancellationToken).ConfigureAwait(false);
+        var id = Guid.Parse(notificationId);
+        Notification? notification = await _notificationRepository.FindByIdAsync(id, cancellationToken).ConfigureAwait(false);
 
         if (notification is null)
         {
@@ -45,7 +47,7 @@ public class NotificationsService : INotificationService
         await _countRepository.DecrementCountAsync(notification.UserId, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<UnreadNotificationCountDto> GetUnreadCountAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<UnreadNotificationCountDto> GetUnreadCountAsync(string userId, CancellationToken cancellationToken)
     {
         int? count = await _countRepository.GetCountAsync(userId, cancellationToken).ConfigureAwait(false);
 
@@ -63,7 +65,7 @@ public class NotificationsService : INotificationService
         };
     }
 
-    public async Task MarkAllAsReadAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task MarkAllAsReadAsync(string userId, CancellationToken cancellationToken)
     {
         IReadOnlyCollection<Notification> unreadNotifications = await _notificationRepository.FindUnreadByUserIdAsync(userId, cancellationToken).ConfigureAwait(false);
 

@@ -29,7 +29,7 @@ public class InitialMigration : IMigration
                            create table if not exists notifications
                            (
                                id         uuid primary key,
-                               user_id    uuid                     not null,
+                               user_id    text                     not null,
                                title      text                     not null,
                                content    text                     not null,
                                type       notification_type        not null,
@@ -42,7 +42,7 @@ public class InitialMigration : IMigration
                            
                            create table if not exists unread_notification_counts
                            (
-                               user_id      uuid primary key,
+                               user_id      text primary key,
                                unread_count integer                  not null,
                                updated_at   timestamp with time zone not null
                            );

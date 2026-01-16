@@ -1,3 +1,4 @@
+using Google.Protobuf.WellKnownTypes;
 using NotificationService.Application.Contracts.DTO;
 
 namespace NotificationService.Presentation.Grpc.Mappers;
@@ -9,18 +10,15 @@ public static class NotificationMapper
         var notification = new Notification
         {
             Id = dto.Id.ToString(),
-            UserId = dto.UserId.ToString(),
+            UserId = dto.UserId,
             Title = dto.Title,
             Content = dto.Content,
             Type = MapTypeToGrpc(dto.Type),
             Status = MapStatusToGrpc(dto.Status),
-            CreatedAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(dto.CreatedAt),
+            CreatedAt = Timestamp.FromDateTimeOffset(dto.CreatedAt),
         };
 
-        if (dto.ReadAt.HasValue)
-        {
-            notification.ReadAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(dto.ReadAt.Value);
-        }
+        if (dto.ReadAt.HasValue) notification.ReadAt = Timestamp.FromDateTimeOffset(dto.ReadAt.Value);
 
         return notification;
     }

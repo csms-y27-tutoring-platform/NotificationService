@@ -4,29 +4,29 @@ namespace NotificationService.Application.Domain.Entities;
 
 public class Notification
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; private set; }
 
-    public Guid UserId { get; set; }
+    public string UserId { get; private set; } = string.Empty;
 
-    public string Title { get; set; } = string.Empty;
+    public string Title { get; private set; } = string.Empty;
 
-    public string Content { get; set; } = string.Empty;
+    public string Content { get; private set; } = string.Empty;
 
-    public NotificationType Type { get; set; }
+    public NotificationType Type { get; private set; }
 
-    public NotificationStatus Status { get; set; }
+    public NotificationStatus Status { get; private set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; private set; }
 
-    public DateTime? ReadAt { get; set; }
+    public DateTime? ReadAt { get; private set; }
 
-    public Notification()
+    private Notification()
     {
     }
 
-    public static Notification Create(Guid id, Guid userId, string title, string content, NotificationType type)
+    public static Notification Create(Guid id, string userId, string title, string content, NotificationType type)
     {
-        if (userId == Guid.Empty)
+        if (string.IsNullOrWhiteSpace(userId))
         {
             throw new ArgumentException("User ID cannot be empty", nameof(userId));
         }

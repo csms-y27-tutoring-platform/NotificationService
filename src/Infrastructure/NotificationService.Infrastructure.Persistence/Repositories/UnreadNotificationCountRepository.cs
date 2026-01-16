@@ -13,7 +13,7 @@ public class UnreadNotificationCountRepository : IUnreadNotificationCountReposit
         _postgresProvider = postgresProvider;
     }
 
-    public async Task<int?> GetCountAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<int?> GetCountAsync(string userId, CancellationToken cancellationToken)
     {
         const string sql = """
                            SELECT unread_count
@@ -38,7 +38,7 @@ public class UnreadNotificationCountRepository : IUnreadNotificationCountReposit
         }
     }
 
-    public async Task UpdateCountAsync(Guid userId, int count, CancellationToken cancellationToken)
+    public async Task UpdateCountAsync(string userId, int count, CancellationToken cancellationToken)
     {
         const string sql = """
                            INSERT INTO unread_notification_counts (user_id, unread_count, updated_at)
@@ -65,7 +65,7 @@ public class UnreadNotificationCountRepository : IUnreadNotificationCountReposit
         }
     }
 
-    public async Task IncrementCountAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task IncrementCountAsync(string userId, CancellationToken cancellationToken)
     {
         const string sql = """
                            INSERT INTO unread_notification_counts (user_id, unread_count, updated_at)
@@ -91,7 +91,7 @@ public class UnreadNotificationCountRepository : IUnreadNotificationCountReposit
         }
     }
 
-    public async Task DecrementCountAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task DecrementCountAsync(string userId, CancellationToken cancellationToken)
     {
         const string sql = """
                            UPDATE unread_notification_counts
@@ -116,7 +116,7 @@ public class UnreadNotificationCountRepository : IUnreadNotificationCountReposit
         }
     }
 
-    public async Task ResetCountAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task ResetCountAsync(string userId, CancellationToken cancellationToken)
     {
         const string sql = """
                            UPDATE unread_notification_counts
