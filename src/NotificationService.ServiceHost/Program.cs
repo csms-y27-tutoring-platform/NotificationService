@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Server.Kestrel.Core;
-using NotificationService.Application.Extensions;
+﻿using NotificationService.Application.Extensions;
 using NotificationService.Infrastructure.Kafka.Extensions;
 using NotificationService.Infrastructure.Persistence.Extensions;
 using NotificationService.Presentation.Grpc.Extensions;
@@ -17,13 +16,11 @@ internal class Program
         builder.Services.AddKafkaInfrastructure(builder.Configuration);
         builder.Services.AddGrpcPresentation();
 
-        builder.Services.Configure<KestrelServerOptions>(options =>
-        {
-            options.ListenLocalhost(5004, listenOptions =>
-            {
-                listenOptions.Protocols = HttpProtocols.Http2;
-            });
-        });
+        builder.Configuration
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables();
 
         WebApplication app = builder.Build();
 
